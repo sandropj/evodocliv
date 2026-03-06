@@ -1,108 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Portal Clínico | Dr. Sandro Pereira</title>
+<title>Portal Clínico Metabólico</title>
+
+<link rel="stylesheet" href="css/style.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-:root{
---emerald:#07282b;
---petrol:#0f4b4d;
---gold:#c39b3b;
---ivory:#f5f4ef;
-}
-
-body{
-margin:0;
-font-family:'Lato',sans-serif;
-background:linear-gradient(rgba(7,40,43,0.9),rgba(7,40,43,0.95)),
-url('img/leo3.png') center/cover fixed;
-color:white;
-}
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:20px;
-}
-
-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-h1{
-font-family:'Cinzel',serif;
-color:var(--gold);
-}
-
-.card{
-background:white;
-color:#333;
-padding:20px;
-border-radius:12px;
-margin-top:20px;
-box-shadow:0 15px 30px rgba(0,0,0,0.3);
-}
-
-input,select,textarea{
-width:100%;
-padding:10px;
-margin-top:8px;
-margin-bottom:12px;
-border-radius:6px;
-border:1px solid #ddd;
-}
-
-button{
-background:var(--gold);
-border:none;
-padding:12px 20px;
-border-radius:25px;
-font-weight:bold;
-cursor:pointer;
-}
-
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-
-@media(max-width:768px){
-
-.grid{
-grid-template-columns:1fr;
-}
-
-}
-
-.exames{
-margin-top:15px;
-}
-
-.exame-item{
-background:#f5f5f5;
-padding:8px;
-border-radius:6px;
-margin-top:6px;
-}
-
-.checklist label{
-display:block;
-margin-top:6px;
-}
-
-</style>
 
 </head>
 
@@ -111,195 +21,76 @@ margin-top:6px;
 <div class="container">
 
 <header>
-
-<h1>Portal Clínico</h1>
-
+<h1>Painel Clínico Metabólico</h1>
 </header>
-
-<!-- FORM REGISTRO -->
 
 <div class="card">
 
-<h2>Registro Diário</h2>
+<h2>Prontuário</h2>
+
+<label>Nome</label>
+<input id="nome">
+
+<label>Data nascimento</label>
+<input type="date" id="nascimento">
+
+<label>Condição principal</label>
+<input id="condicao">
+
+<button onclick="salvarProntuario()">Salvar prontuário</button>
+
+</div>
+
+<div class="card">
+
+<h2>Registro Clínico</h2>
 
 <label>Data</label>
 <input type="date" id="data">
 
-<label>Peso (kg)</label>
+<label>Peso</label>
 <input type="number" id="peso">
 
 <label>IMC</label>
 <input type="number" id="imc">
 
-<label>Disposição (0–10)</label>
-<input type="range" min="0" max="10" id="disposicao">
-
-<label>Dor (0–10)</label>
-<input type="range" min="0" max="10" id="dor">
-
-<label>Qualidade do sono (0–10)</label>
-<input type="range" min="0" max="10" id="sono">
-
-<label>Observações</label>
-<textarea id="obs"></textarea>
-
-<div class="checklist">
-
-<h3>Checklist diário</h3>
-
-<label><input type="checkbox"> Treino realizado</label>
-<label><input type="checkbox"> Alimentação adequada</label>
-<label><input type="checkbox"> Sono reparador</label>
-<label><input type="checkbox"> Energia adequada</label>
+<button onclick="salvarRegistro()">Salvar registro</button>
 
 </div>
-
-<button onclick="salvarRegistro()">Salvar Registro</button>
-
-</div>
-
-
-<!-- UPLOAD EXAME -->
 
 <div class="card">
 
-<h2>Exames Laboratoriais</h2>
+<h2>Exames laboratoriais</h2>
 
-<input type="file" id="exameUpload">
+<label>Glicose</label>
+<input type="number" id="glicose">
 
-<button onclick="uploadExame()">Adicionar Exame</button>
+<label>PCR</label>
+<input type="number" id="pcr">
 
-<div class="exames" id="listaExames"></div>
+<button onclick="salvarExame()">Salvar exame</button>
 
 </div>
-
-
-<!-- UPLOAD FOTO -->
 
 <div class="card">
 
-<h2>Fotos de Evolução</h2>
+<h2>Painel metabólico</h2>
 
-<input type="file" id="fotoUpload">
+<div id="painelMetabolico"></div>
 
 </div>
-
-
-<!-- GRÁFICOS -->
 
 <div class="card">
 
-<h2>Evolução Clínica</h2>
+<h2>Evolução clínica</h2>
 
-<canvas id="graficoPeso"></canvas>
-
-</div>
+<canvas id="pesoChart"></canvas>
 
 </div>
 
-<script>
+</div>
 
-let registros = JSON.parse(localStorage.getItem("registros")) || []
-
-function salvarRegistro(){
-
-let registro = {
-
-data:document.getElementById("data").value,
-peso:parseFloat(document.getElementById("peso").value),
-imc:parseFloat(document.getElementById("imc").value),
-disposicao:document.getElementById("disposicao").value,
-dor:document.getElementById("dor").value,
-sono:document.getElementById("sono").value
-
-}
-
-registros.push(registro)
-
-localStorage.setItem("registros",JSON.stringify(registros))
-
-alert("Registro salvo")
-
-atualizarGrafico()
-
-}
-
-function uploadExame(){
-
-let file = document.getElementById("exameUpload").files[0]
-
-if(!file) return
-
-let exames = JSON.parse(localStorage.getItem("exames")) || []
-
-exames.push(file.name)
-
-localStorage.setItem("exames",JSON.stringify(exames))
-
-renderExames()
-
-}
-
-function renderExames(){
-
-let exames = JSON.parse(localStorage.getItem("exames")) || []
-
-let lista = document.getElementById("listaExames")
-
-lista.innerHTML=""
-
-exames.forEach(exame=>{
-
-let div=document.createElement("div")
-
-div.className="exame-item"
-
-div.innerText=exame
-
-lista.appendChild(div)
-
-})
-
-}
-
-function atualizarGrafico(){
-
-let labels=registros.map(r=>r.data)
-let dadosPeso=registros.map(r=>r.peso)
-
-const ctx=document.getElementById('graficoPeso')
-
-new Chart(ctx,{
-
-type:'line',
-
-data:{
-labels:labels,
-datasets:[{
-
-label:"Peso",
-
-data:dadosPeso,
-
-borderColor:"#c39b3b",
-
-backgroundColor:"rgba(195,155,59,0.2)",
-
-tension:0.3
-
-}]
-
-}
-
-})
-
-}
-
-renderExames()
-
-atualizarGrafico()
-
-</script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
